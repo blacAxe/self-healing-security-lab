@@ -12,7 +12,9 @@ const pool = mysql.createPool({
     port: process.env.DB_PORT,
     // Aiven requires SSL. This looks for the ca.pem file you downloaded.
     ssl: {
-        ca: fs.readFileSync(path.join(__dirname, 'ca.pem')),
+        // This checks if we are on Render (which uses the string) 
+        // or local (which uses the file)
+        ca: process.env.DB_CA_CERT || fs.readFileSync('./ca.pem'),
     },
     waitForConnections: true,
     connectionLimit: 10,
