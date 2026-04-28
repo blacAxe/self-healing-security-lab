@@ -1,0 +1,133 @@
+<%- include('partials/header') %>
+<%- include('partials/sidebar') %>
+
+<div class="main-content">
+    
+    <div class="dashboard-header">
+        <div>
+            <h1>Lesson: <%= lessonName %></h1>
+            <span style="padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; background: <%= isSecureMode ? '#d4edda' : '#f8d7da' %>; color: <%= isSecureMode ? '#155724' : '#721c24' %>; border: 1px solid <%= isSecureMode ? '#c3e6cb' : '#f5c6cb' %>;">
+                <%= isSecureMode ? '🛡️ SECURE MODE' : '⚠️ VULNERABLE MODE' %>
+            </span>
+        </div>
+    
+        <form action="/toggle-security" method="POST">
+            <button type="submit" class="<%= isSecureMode ? 'secure-btn' : 'vuln-btn' %>">
+            <%= isSecureMode ? 'Disable Security' : 'Enable Security' %>
+            </button>
+        </form>
+
+        <a href="/?vln=<%= vulnType %>" style="text-decoration:none; color: #3498db; font-size: 0.8rem;">
+    🔄      Reset Lesson
+        </a>
+    </div>
+
+    <div class="lesson-content">
+    
+    <% if (vulnType === 'sql') { %>
+        <h3>Target: User Search</h3>
+        <p>Try entering <code>1 OR 1=1</code> to bypass the ID filter.</p>
+        
+        <form action="/search-sql" method="POST">
+            <input type="text" name="id" placeholder="Enter User ID">
+            <button type="submit">Search</button>
+        </form>
+
+    <% } else if (vulnType === 'xss') { %>
+        <h3>Target: Greeting Generator</h3>
+        <p>Try entering <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code>.</p>
+        
+        <form action="/search-xss" method="POST">
+            <input type="text" name="name" placeholder="Enter your name">
+            <button type="submit">Greet Me</button>
+        </form>
+
+    <% } else if (vulnType === 'idor') { %>
+        <h3>Target: Private Profile Access</h3>
+        <p>You are logged in as <b>Bob (ID: 3)</b>. Try changing the URL or input to see Admin (ID: 1).</p>
+        
+        <form action="/profile" method="GET">
+            <input type="number" name="id" value="3">
+            <button type="submit">View My Profile</button>
+        </form>
+
+    <% } else { %>
+        <p>Select a lesson from the sidebar to begin.</p>
+    <% } %>
+
+    <hr>
+
+    <% if (locals.executedQuery || locals.xssOutput) { %>
+        <h4>System Output:</h4>
+        <div class="code-box">
+            <% if (locals.executedQuery) { %> <code>QUERY: <%= executedQuery %></code> <% } %>
+            <% if (locals.xssOutput) { %> 
+                <p>Rendered Result: <%- xssOutput %></p> 
+                <% } %>
+        </div>
+    <% } %>
+
+    <% if (locals.results && results.length > 0) { %>
+        <h4>Users Found in Database:</h4>
+        <table border="1" style="width:100%; border-collapse: collapse; background: white;">
+            <tr style="background: #eee;">
+                <th>ID</th>
+                <th>Username</th>
+                <th>Bio</th>
+            </tr>
+            <% results.forEach(user => { %>
+                <tr>
+                    <td><%= user.id %></td>
+                    <td><%= user.username %></td>
+                    <td><%= user.bio %></td>
+                </tr>
+            <% }) %>
+        </table>
+    <% } else if (locals.results && results.length === 0) { %>
+        <p>No users found for that ID.</p>
+    <% } %>
+
+    <% if (vulnType === 'auth') { %>
+        <h3>Target: User Login</h3>
+        <p>Try logging in as <b>bob</b> with <b>password123</b>.</p>
+        
+        <form action="/login-auth" method="POST">
+            <input type="text" name="username" placeholder="Username" required><br><br>
+            <input type="password" name="password" placeholder="Password" required><br><br>
+            <button type="submit">Login</button>
+        </form>
+
+        <% if (locals.authMessage) { %>
+            <div style="margin-top: 15px; padding: 10px; border: 1px solid #ccc; background: #fff;">
+                <strong>Server Response:</strong> <%= authMessage %>
+            </div>
+        <% } %>
+    <% } %>
+
+    <% if (locals.profileData) { %>
+        <div style="margin-top: 20px; padding: 20px; border: 2px solid #3498db; background: #ebf5fb;">
+            <h4>User Profile Found:</h4>
+            <p><strong>Username:</strong> <%= profileData.username %></p>
+            <p><strong>Bio:</strong> <%= profileData.bio %></p>
+        </div>
+    <% } %>
+    
+    <% if (vulnType === 'config') { %>
+        <h3>Target: Debugging Endpoints</h3>
+        <p>Leaking system info helps attackers map your tech stack.</p>
+        
+        <a href="/debug-error" class="vuln-btn" style="text-decoration:none; display:inline-block;">
+            Trigger System Error
+        </a>
+
+        <% if (locals.error) { %>
+            <div style="margin-top:20px; padding:15px; background:#2d3436; color:#ff7675; font-family:monospace; white-space: pre-wrap;">
+                <%= error %>
+            </div>
+        <% } %>
+    <% } %>
+
+    </div>
+</div>
+
+<%- include('partials/footer') %>
