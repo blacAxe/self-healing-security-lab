@@ -4,7 +4,6 @@ const path = require('path');
 require('dotenv').config();
 
 // Create the connection pool
-const fs = require('fs');
 
 const isTest = process.env.NODE_ENV === 'test';
 
