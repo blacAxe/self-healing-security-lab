@@ -1,7 +1,6 @@
 # Self Healing OWASP Top 5 Security Lab
 
-CI status badge
-Docker ready badge
+Interactive security lab that demonstrates real world web attacks and their secure fixes
 
 An interactive backend security lab built with Node.js that demonstrates how common web vulnerabilities work and how to fix them.
 
